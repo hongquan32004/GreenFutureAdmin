@@ -9,4 +9,8 @@ export default defineConfig({
     devSourcemap: false // Tắt source map CSS trong chế độ dev
   },
   // ...các cấu hình khác
+  optimizeDeps: {
+    include: ['react-icons/bi']
+  }
 })
+

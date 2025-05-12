@@ -24,6 +24,9 @@ a {
   color: #4154f1;
   text-decoration: none;
 }
+a {
+  text-decoration: none !important;
+}
 
 a:hover {
   color: #717ff5;
@@ -38,6 +41,29 @@ h5,
 h6 {
   font-family: "Nunito", sans-serif;
 }
+
+/*--------------------------------------------------------------
+# CCS them
+--------------------------------------------------------------*/
+.bi{
+  font-size: 25px;
+  margin: 5px;
+}
+.bi-menucon{
+  margin: 5px;
+}
+.bi-search{
+  font-size: 20px;
+  margin-bottom: 3px;
+}
+.button-spacing > button {
+  margin-right: 10px;
+}
+
+.button-spacing > button:last-child {
+  margin-right: 0;
+}
+
 
 /*--------------------------------------------------------------
 # Main
@@ -114,7 +140,9 @@ h6 {
   border: 0;
   box-shadow: 0 5px 30px 0 rgba(82, 63, 105, 0.2);
 }
-
+.biBsJustify{
+  font-size: 30px;
+}
 .dropdown-menu .dropdown-header,
 .dropdown-menu .dropdown-footer {
   text-align: center;
@@ -2640,7 +2668,7 @@ progress {
   }
   .col-lg-6 {
     flex: 0 0 auto;
-    width: 50%;
+    width: 80%;
   }
   .col-lg-7 {
     flex: 0 0 auto;

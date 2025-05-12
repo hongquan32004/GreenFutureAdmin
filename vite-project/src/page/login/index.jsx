@@ -1,6 +1,7 @@
 import React from "react";
 import "../../index.css";
 
+
 function Login() {
   return (
     <div className="container">
@@ -13,7 +14,7 @@ function Login() {
                   href="index.html"
                   className="logo d-flex align-items-center w-auto"
                 >
-                  <img src="assets/img/logo.png" alt="" />
+                  <img src="/public/img/logo.png" alt="" />
                   <span className="d-none d-lg-block">GreenFuture</span>
                 </a>
               </div>

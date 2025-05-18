@@ -13,4 +13,3 @@ export default defineConfig({
     include: ['react-icons/bi']
   }
 })
-

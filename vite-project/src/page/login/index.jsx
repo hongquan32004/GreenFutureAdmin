@@ -1,7 +1,33 @@
 import React from "react";
 import "../../index.css";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../api/auth";
+import { message } from "antd";
 
 function Login() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
+  const onFinish = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await login({ username, password });
+      if (response) {
+        console.log("Đăng nhập thành công");
+        message.success("Đăng nhập thành công");
+        navigate("/");
+      } else {
+        console.log("Đăng nhập thất bại");
+        message.error("Đăng nhập thất bại!!!");
+      }
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+      message.error("Đăng nhập thất bại!!!");
+    }
+  };
   return (
     <div className="container">
       <section className="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
@@ -29,9 +55,9 @@ function Login() {
                     </p>
                   </div>
 
-                  <form className="row g-3 needs-validation" novalidate>
+                  <form className="row g-3 needs-validation" noValidate>
                     <div className="col-12">
-                      <label for="yourUsername" className="form-label">
+                      <label htmlFor="yourUsername" className="form-label">
                         Username
                       </label>
                       <div className="input-group has-validation">
@@ -46,7 +72,8 @@ function Login() {
                           name="username"
                           className="form-control"
                           id="yourUsername"
-                          required
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
                         />
                         <div className="invalid-feedback">
                           Please enter your username.
@@ -55,7 +82,7 @@ function Login() {
                     </div>
 
                     <div className="col-12">
-                      <label for="yourPassword" className="form-label">
+                      <label htmlFor="yourPassword" className="form-label">
                         Password
                       </label>
                       <input
@@ -63,7 +90,8 @@ function Login() {
                         name="password"
                         className="form-control"
                         id="yourPassword"
-                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                       <div className="invalid-feedback">
                         Please enter your password!
@@ -79,13 +107,20 @@ function Login() {
                           value="true"
                           id="rememberMe"
                         />
-                        <label className="form-check-label" for="rememberMe">
+                        <label
+                          className="form-check-label"
+                          htmlFor="rememberMe"
+                        >
                           Remember me
                         </label>
                       </div>
                     </div>
                     <div className="col-12">
-                      <button className="btn btn-primary w-100" type="submit">
+                      <button
+                        className="btn btn-primary w-100"
+                        type="submit"
+                        onClick={onFinish}
+                      >
                         Login
                       </button>
                     </div>

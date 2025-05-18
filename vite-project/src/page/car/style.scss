@@ -1,0 +1,30 @@
+.dark-table {
+  background-color: #f7f7f7; // nền tổng thể bảng (nhạt hơn trắng)
+  
+  .ant-table-thead > tr > th {
+    background-color: #f0f0f0; // header màu xám nhạt
+    color: #000000;
+    font-weight: 600;
+  }
+
+  .ant-table-tbody > tr > td {
+    background-color: #fafafa; // hàng trong nền xám rất nhẹ
+    color: #000000;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background-color: #e6f7ff; // màu hover nhẹ để dễ nhận biết
+  }
+
+  .ant-tag {
+    color: white;
+  }
+
+  .ant-tag-green {
+    background-color: #52c41a;
+  }
+
+  .ant-tag-orange {
+    background-color: #fa8c16;
+  }
+}

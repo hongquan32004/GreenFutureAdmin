@@ -105,15 +105,29 @@ const postFormData = async (path, formData) => {
     }
 };
 // Phương thức PUT
-const put = async(path,data) => {
+const put = async(path, formData) => {
     try{
-        const response = await axiosInstance.put(`/${path}`, data);
+        const response = await axiosInstance.put(`/${path}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
         return response.data;
     }
     catch(error){
         handleError(error);
     }
 }
+const putForm = async(path, formData) => {
+    try{
+        const response = await axiosInstance.put(`/${path}`, formData);
+        return response.data;
+    }
+    catch(error){
+        handleError(error);
+    }
+}
+
 
 // Phương thức PATCH với form data
 const patchForm = async (path, data) => {
@@ -147,4 +161,5 @@ export {
     patchForm,
     deleteMethod,
     postFormData,
+    putForm
 };

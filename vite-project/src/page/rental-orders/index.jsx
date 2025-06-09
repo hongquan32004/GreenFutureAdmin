@@ -120,8 +120,8 @@ const RentalOrder = () => {
         }
         return (
           <>
-            <Tag color={color}>{status.toUpperCase()}</Tag>
-            <br />
+            {/* <Tag color={color}>{status.toUpperCase()}</Tag>
+            <br /> */}
             <Select
               defaultValue={status}
               onChange={async (newStatus) => {

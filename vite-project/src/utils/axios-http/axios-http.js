@@ -1,12 +1,15 @@
 /* eslint-disable */
 import axios from 'axios';
-import { data } from 'react-router-dom';
+import {
+    data
+} from 'react-router-dom';
 
 
 
 const baseURL =
     import.meta.env.VITE_APP_URL_BE;
 
+console.log(baseURL)
 
 const createAxiosInstance = (baseURL, headers = {}) => {
     const instance = axios.create({
@@ -90,12 +93,11 @@ const patch = async (path, data) => {
 };
 
 // Phương thức PUT
-const put = async(path,data) => {
-    try{
+const put = async (path, data) => {
+    try {
         const response = await axiosInstance.put(`/${path}`, data);
         return response.data;
-    }
-    catch(error){
+    } catch (error) {
         handleError(error);
     }
 }

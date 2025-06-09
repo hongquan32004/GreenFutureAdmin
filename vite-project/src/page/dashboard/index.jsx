@@ -1,170 +1,294 @@
-import React, { useEffect, useRef } from 'react';
-import { 
-  BiCart, 
-  BiDollar, 
-  BiGroup, 
-  BiDotsVertical,
-} from 'react-icons/bi';
-import { FaCircle } from 'react-icons/fa';
-import ApexCharts from 'apexcharts';
+import React, { useEffect, useRef, useState } from "react";
+import { message } from "antd";
+import { BiCart, BiDollar, BiGroup, BiDotsVertical } from "react-icons/bi";
+import { FaCircle } from "react-icons/fa";
+import ApexCharts from "apexcharts";
+import { get } from "../../utils/axios-http/axios-http";
 
 const Dashboard = () => {
   const reportsChartRef = useRef(null);
-  const budgetChartRef = useRef(null);
   const trafficChartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
+
+  // Đơn hàng
+  const [orderPeriod, setOrderPeriod] = useState("daily");
+  const [orderCount, setOrderCount] = useState(0);
+  const [percentageChangeOrder, setPercentageChangeOrder] = useState(0);
+
+  // Doanh số
+  const [revenuePeriod, setRevenuePeriod] = useState("monthly");
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [percentageChangeRevenue, setPercentageChangeRevenue] = useState(0);
+
+  // Người dùng
+  const [customerPeriod, setCustomerPeriod] = useState("monthly");
+  const [totalCustomer, setTotalCustomer] = useState(0);
+  const [percentageChangeCustomer, setPercentageChangeCustomer] = useState(0);
+
+  // Bán chạy
+  const [topSellingPeriod, setTopSellingPeriod] = useState("monthly");
+  const [topSelling, setTopSelling] = useState([]);
+
+  const [orderChartPeriod, setOrderChartPeriod] = useState("daily");
+  const [customerChartPeriod, setCustomerChartPeriod] = useState("daily");
+
+  const [orderChartGranularity, setOrderChartGranularity] = useState("day");
+  const [customerChartGranularity, setCustomerChartGranularity] =
+    useState("day");
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchOrderStats = async (granularity = "day", period = "daily") => {
+    setOrderPeriod(period);
+    try {
+      const res = await get(
+        `statistics/rental-orders?granularity=${granularity}&period=${period}`
+      );
+      const stats = res.data?.stats.reverse() || [];
+
+      setOrderCount(stats[0].orderCount.count);
+      setPercentageChangeOrder(stats[0].orderCount.percentageChange);
+    } catch (error) {
+      message.error("Không thể lấy dữ liệu đơn hàng");
+    }
+  };
+
+  const fetchRevenueStats = async (
+    granularity = "month",
+    period = "monthly"
+  ) => {
+    setRevenuePeriod(period);
+    try {
+      const res = await get(
+        `statistics/rental-orders?granularity=${granularity}&period=${period}`
+      );
+      const stats = res.data?.stats.reverse() || [];
+
+      setTotalRevenue(stats[0].totalRevenue.amount);
+      setPercentageChangeRevenue(stats[0].totalRevenue.percentageChange);
+    } catch (error) {
+      message.error("Không thể lấy dữ liệu doanh số");
+    }
+  };
+
+  const fetchCustomerStats = async (
+    granularity = "month",
+    period = "monthly"
+  ) => {
+    setCustomerPeriod(period);
+    try {
+      const res = await get(
+        `statistics/customers?granularity=${granularity}&period=${period}`
+      );
+      const stats = res.data?.stats.reverse() || [];
+
+      setTotalCustomer(stats[0].count);
+      setPercentageChangeCustomer(stats[0].percentageChange);
+    } catch (error) {
+      message.error("Không thể lấy dữ liệu doanh số");
+    }
+  };
+
+  const fetchTopSellingStats = async (period = "monthly") => {
+    setTopSellingPeriod(period);
+    try {
+      const res = await get(`statistics/cars?period=${period}`);
+      const stats = res.data?.carRentalMostList || [];
+
+      setTopSelling(stats);
+    } catch (error) {
+      message.error("Không thể lấy dữ liệu");
+    }
+  };
 
   useEffect(() => {
-    // Reports Chart
-    if (reportsChartRef.current) {
-      const reportsChart = new ApexCharts(reportsChartRef.current, {
-        series: [{
-          name: 'Sales',
-          data: [31, 40, 28, 51, 42, 82, 56],
-        }, {
-          name: 'Revenue',
-          data: [11, 32, 45, 32, 34, 52, 41]
-        }, {
-          name: 'Customers',
-          data: [15, 11, 32, 18, 9, 24, 11]
-        }],
+    fetchOrderStats();
+    fetchRevenueStats();
+    fetchCustomerStats();
+    fetchTopSellingStats();
+  }, []);
+
+  const getLabel = (period) => {
+    switch (period) {
+      case "daily":
+        return "Hôm nay";
+      case "monthly":
+        return "Tháng này";
+      case "yearly":
+        return "Năm nay";
+      default:
+        return "";
+    }
+  };
+
+  const fetchReportsChartData = async (
+    orderChartPeriod = "daily",
+    orderChartGranularity = "hour",
+    customerChartPeriod = "daily",
+    customerChartGranularity = "hour"
+  ) => {
+    try {
+      // 1. Huỷ chart cũ nếu có
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
+      }
+
+      // 2. Gọi API song song
+      const [rentalRes, custRes] = await Promise.all([
+        get(
+          `statistics/rental-orders?granularity=${orderChartGranularity}&period=${orderChartPeriod}`
+        ),
+        get(
+          `statistics/customers?granularity=${customerChartGranularity}&period=${customerChartPeriod}`
+        ),
+      ]);
+
+      const rentalStats = rentalRes.data.stats;
+      const custStats = custRes.data.stats;
+
+      // 3. Tạo map lookup từ custStats
+      const custMap = new Map(custStats.map((c) => [c.period, c.count]));
+
+      // 4. Dùng period từ rentalStats làm gốc
+      const categories = rentalStats.map((s) =>
+        new Date(s.period.replace(" ", "T") + ":00:00Z").toISOString()
+      );
+
+      const series = [
+        {
+          name: "Đơn thuê",
+          type: "line",
+          data: rentalStats.map((s) => s.orderCount.count),
+        },
+        {
+          name: "Doanh số",
+          type: "area",
+          data: rentalStats.map((s) => s.totalRevenue.amount),
+        },
+        {
+          name: "Người dùng",
+          type: "line",
+          data: rentalStats.map((s) => custMap.get(s.period) ?? 0),
+        },
+      ];
+
+      // 5. Cấu hình biểu đồ với y-axis riêng để dễ nhìn
+      const options = {
+        series,
         chart: {
-          height: 350,
-          type: 'area',
+          height: 400,
+          type: "line",
+          stacked: false,
           toolbar: { show: false },
         },
-        markers: { size: 4 },
-        colors: ['#4154f1', '#2eca6a', '#ff771d'],
-        fill: {
-          type: "gradient",
-          gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.3,
-            opacityTo: 0.4,
-            stops: [0, 90, 100]
-          }
-        },
         dataLabels: { enabled: false },
-        stroke: {
-          curve: 'smooth',
-          width: 2
-        },
+        stroke: { width: [2, 2, 2], curve: "smooth" },
         xaxis: {
-          type: 'datetime',
-          categories: [
-            "2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", 
-            "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", 
-            "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", 
-            "2018-09-19T06:30:00.000Z"
-          ]
+          type: "datetime",
+          categories,
+          title: { text: "Thời gian" },
         },
-        tooltip: {
-          x: { format: 'dd/MM/yy HH:mm' },
-        }
-      });
-      reportsChart.render();
-
-      return () => {
-        reportsChart.destroy();
-      };
-    }
-  }, []);
-
-  useEffect(() => {
-    // Budget Chart
-    if (budgetChartRef.current) {
-      const budgetChart = new ApexCharts(budgetChartRef.current, {
-        chart: {
-          type: 'radar',
-          height: 350
-        },
-        legend: {
-          show: true,
-          position: 'top',
-          labels: {
-            colors: undefined,
-            useSeriesColors: true
+        yaxis: [
+          {
+            seriesName: "Đơn thuê",
+            title: { text: "Đơn thuê" },
+            labels: { style: { color: "#4154f1" } },
           },
-          markers: {
-            width: 12,
-            height: 12,
-            strokeWidth: 0,
-            strokeColor: '#fff',
-            radius: 12,
-          }
-        },
-        series: [{
-          name: 'Budget vs spending',
-          data: [
-            { 
-              name: 'Allocated Budget',
-              data: [4200, 3000, 20000, 35000, 50000, 18000]
-            },
-            { 
-              name: 'Actual Spending',
-              data: [5000, 14000, 28000, 26000, 42000, 21000]
-            }
-          ]
-        }],
-        xaxis: {
-          categories: ['Sales', 'Administration', 'IT', 'Customer Support', 'Development', 'Marketing']
-        },
-        yaxis: {
-          show: false
-        },
-        markers: {
-          size: 0
-        },
+          {
+            opposite: true,
+            seriesName: "Doanh số",
+            title: { text: "Doanh số (VNĐ)" },
+            labels: { style: { color: "#2eca6a" } },
+          },
+          {
+            opposite: true,
+            seriesName: "Người dùng",
+            title: { text: "Người dùng" },
+            labels: { style: { color: "#ff771d" } },
+          },
+        ],
+        colors: ["#4154f1", "#2eca6a", "#ff771d"],
         tooltip: {
-          y: {
-            formatter: function(val) {
-              return val.toString()
-            }
-          }
-        }
-      });
-      budgetChart.render();
-
-      return () => {
-        budgetChart.destroy();
+          shared: true,
+          x: { format: "dd/MM/yy HH:mm" },
+        },
       };
+
+      // 6. Render
+      chartInstanceRef.current = new ApexCharts(
+        reportsChartRef.current,
+        options
+      );
+      chartInstanceRef.current.render();
+    } catch (err) {
+      console.error("Lỗi load reports chart:", err);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    // Traffic Chart
-    if (trafficChartRef.current) {
-      const trafficChart = new ApexCharts(trafficChartRef.current, {
-        chart: {
-          type: 'pie',
-          height: 350
-        },
-        tooltip: { 
-          trigger: 'item' 
-        },
-        legend: {
-          top: '5%',
-          left: 'center'
-        },
-        series: [1048, 735, 580, 484, 300],
-        labels: ['Search Engine', 'Direct', 'Email', 'Union Ads', 'Video Ads'],
-        responsive: [{
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 200
-            },
-            legend: {
-              position: 'bottom'
-            }
-          }
-        }]
-      });
-      trafficChart.render();
+    fetchReportsChartData();
 
-      return () => {
-        trafficChart.destroy();
-      };
-    }
+    return () => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
+      }
+    };
+  }, [orderChartPeriod, customerChartPeriod]);
+
+  useEffect(() => {
+    const fetchOverviewChart = async () => {
+      try {
+        const res = await get(`statistics/overview`);
+        const data = res.data;
+
+        const chartOptions = {
+          chart: {
+            type: "pie",
+            height: 350,
+          },
+          labels: ["Đơn chờ xử lý", "Đơn đã hoàn thành"],
+          series: [data.pendingOrders, data.completedOrders],
+          tooltip: {
+            y: {
+              formatter: (val) => `${val.toLocaleString("vi-VN")} đơn`,
+            },
+          },
+          legend: {
+            top: "5%",
+            left: "center",
+          },
+          responsive: [
+            {
+              breakpoint: 480,
+              options: {
+                chart: {
+                  width: 200,
+                },
+                legend: {
+                  position: "bottom",
+                },
+              },
+            },
+          ],
+        };
+
+        if (trafficChartRef.current) {
+          const trafficChart = new ApexCharts(
+            trafficChartRef.current,
+            chartOptions
+          );
+          trafficChart.render();
+
+          return () => {
+            trafficChart.destroy();
+          };
+        }
+      } catch (error) {
+        message.error("Không thể lấy dữ liệu tổng quan");
+      }
+    };
+
+    fetchOverviewChart();
   }, []);
 
   return (
@@ -173,8 +297,10 @@ const Dashboard = () => {
         <h1>Dashboard</h1>
         <nav>
           <ol className="breadcrumb">
-            <li className="breadcrumb-item"><a href="index.html">Home</a></li>
-            <li className="breadcrumb-item active">Dashboard</li>
+            <li className="breadcrumb-item">
+              <a href="index.html">Home</a>
+            </li>
+            <li className="breadcrumb-item active">Dashboarddd</li>
           </ol>
         </nav>
       </div>
@@ -184,7 +310,7 @@ const Dashboard = () => {
           {/* Left side columns */}
           <div className="col-lg-8">
             <div className="row">
-              {/* Sales Card */}
+              {/* Rental Order Card */}
               <div className="col-xxl-4 col-md-6">
                 <div className="card info-card sales-card">
                   <div className="filter">
@@ -193,23 +319,64 @@ const Dashboard = () => {
                     </a>
                     <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                       <li className="dropdown-header text-start">
-                        <h6>Filter</h6>
+                        <h6>Lọc</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchOrderStats("day", "daily")}
+                        >
+                          Ngày
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchOrderStats("month", "monthly")}
+                        >
+                          Tháng
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchOrderStats("year", "yearly")}
+                        >
+                          Năm
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Sales <span>| Today</span></h5>
+                    <h5 className="card-title">
+                      Đơn thuê <span>| {getLabel(orderPeriod)}</span>
+                    </h5>
                     <div className="d-flex align-items-center">
                       <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <BiCart />
                       </div>
                       <div className="ps-3">
-                        <h6>145</h6>
-                        <span className="text-success small pt-1 fw-bold">12%</span>
-                        <span className="text-muted small pt-2 ps-1">increase</span>
+                        <h6>
+                          {orderCount.toLocaleString("vi-VN", {
+                            maximumFractionDigits: 0,
+                          })}{" "}
+                          đơn
+                        </h6>
+                        <span
+                          className={`small pt-1 fw-bold ${
+                            percentageChangeOrder >= 0
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          {Math.abs(percentageChangeOrder)}%
+                        </span>
+                        <span className="text-muted small pt-2 ps-1">
+                          {percentageChangeOrder >= 0 ? "tăng" : "giảm"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -225,23 +392,68 @@ const Dashboard = () => {
                     </a>
                     <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                       <li className="dropdown-header text-start">
-                        <h6>Filter</h6>
+                        <h6>Lọc</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchReportsChartData("day", "daily")}
+                        >
+                          Ngày
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() =>
+                            fetchReportsChartData("month", "monthly")
+                          }
+                        >
+                          Tháng
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() =>
+                            fetchReportsChartData("year", "yearly")
+                          }
+                        >
+                          Năm
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Revenue <span>| This Month</span></h5>
+                    <h5 className="card-title">
+                      Doanh số <span>| {getLabel(revenuePeriod)}</span>
+                    </h5>
                     <div className="d-flex align-items-center">
                       <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <BiDollar />
                       </div>
                       <div className="ps-3">
-                        <h6>$3,264</h6>
-                        <span className="text-success small pt-1 fw-bold">8%</span>
-                        <span className="text-muted small pt-2 ps-1">increase</span>
+                        <h6>
+                          {totalRevenue.toLocaleString("vi-VN", {
+                            maximumFractionDigits: 0,
+                          })}{" "}
+                          đ
+                        </h6>
+                        <span
+                          className={`small pt-1 fw-bold ${
+                            percentageChangeRevenue >= 0
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          {Math.abs(percentageChangeRevenue)}%
+                        </span>
+                        <span className="text-muted small pt-2 ps-1">
+                          {percentageChangeRevenue >= 0 ? "tăng" : "giảm"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -257,23 +469,59 @@ const Dashboard = () => {
                     </a>
                     <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                       <li className="dropdown-header text-start">
-                        <h6>Filter</h6>
+                        <h6>Lọc</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchCustomerStats("day", "daily")}
+                        >
+                          Ngày
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchCustomerStats("month", "monthly")}
+                        >
+                          Tháng
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchCustomerStats("year", "yearly")}
+                        >
+                          Năm
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Customers <span>| This Year</span></h5>
+                    <h5 className="card-title">
+                      Người dùng <span>| {getLabel(customerPeriod)}</span>
+                    </h5>
                     <div className="d-flex align-items-center">
                       <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <BiGroup />
                       </div>
                       <div className="ps-3">
-                        <h6>1244</h6>
-                        <span className="text-danger small pt-1 fw-bold">12%</span>
-                        <span className="text-muted small pt-2 ps-1">decrease</span>
+                        <h6>{totalCustomer}</h6>
+                        <span
+                          className={`small pt-1 fw-bold ${
+                            percentageChangeCustomer >= 0
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          {Math.abs(percentageChangeCustomer)}%
+                        </span>
+                        <span className="text-muted small pt-2 ps-1">
+                          {percentageChangeCustomer >= 0 ? "tăng" : "giảm"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -289,86 +537,63 @@ const Dashboard = () => {
                     </a>
                     <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                       <li className="dropdown-header text-start">
-                        <h6>Filter</h6>
+                        <h6>Lọc</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() =>
+                            fetchReportsChartData(
+                              "daily",
+                              "hour",
+                              "daily",
+                              "hour"
+                            )
+                          }
+                        >
+                          Ngày
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() =>
+                            fetchReportsChartData(
+                              "monthly",
+                              "day",
+                              "monthly",
+                              "day"
+                            )
+                          }
+                        >
+                          Tháng
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() =>
+                            fetchReportsChartData(
+                              "yearly",
+                              "day",
+                              "yearly",
+                              "day"
+                            )
+                          }
+                        >
+                          Năm
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Reports <span>/Today</span></h5>
+                    <h5 className="card-title">
+                      Báo cáo <span>/ Hôm nay</span>
+                    </h5>
                     <div id="reportsChart" ref={reportsChartRef}></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Sales */}
-              <div className="col-12">
-                <div className="card recent-sales overflow-auto">
-                  <div className="filter">
-                    <a className="icon" href="#" data-bs-toggle="dropdown">
-                      <BiDotsVertical />
-                    </a>
-                    <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                      <li className="dropdown-header text-start">
-                        <h6>Filter</h6>
-                      </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
-                    </ul>
-                  </div>
-                  <div className="card-body">
-                    <h5 className="card-title">Recent Sales <span>| Today</span></h5>
-                    <table className="table table-borderless datatable">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Customer</th>
-                          <th scope="col">Product</th>
-                          <th scope="col">Price</th>
-                          <th scope="col">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row"><a href="#">#2457</a></th>
-                          <td>Brandon Jacob</td>
-                          <td><a href="#" className="text-primary">At praesentium minu</a></td>
-                          <td>$64</td>
-                          <td><span className="badge bg-success">Approved</span></td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#">#2147</a></th>
-                          <td>Bridie Kessler</td>
-                          <td><a href="#" className="text-primary">Blanditiis dolor omnis similique</a></td>
-                          <td>$47</td>
-                          <td><span className="badge bg-warning">Pending</span></td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#">#2049</a></th>
-                          <td>Ashleigh Langosh</td>
-                          <td><a href="#" className="text-primary">At recusandae consectetur</a></td>
-                          <td>$147</td>
-                          <td><span className="badge bg-success">Approved</span></td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#">#2644</a></th>
-                          <td>Angus Grady</td>
-                          <td><a href="#" className="text-primar">Ut voluptatem id earum et</a></td>
-                          <td>$67</td>
-                          <td><span className="badge bg-danger">Rejected</span></td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#">#2644</a></th>
-                          <td>Raheem Lehner</td>
-                          <td><a href="#" className="text-primary">Sunt similique distinctio</a></td>
-                          <td>$165</td>
-                          <td><span className="badge bg-success">Approved</span></td>
-                        </tr>
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               </div>
@@ -382,61 +607,78 @@ const Dashboard = () => {
                     </a>
                     <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                       <li className="dropdown-header text-start">
-                        <h6>Filter</h6>
+                        <h6>Lọc</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchTopSellingStats("daily")}
+                        >
+                          Ngày
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchTopSellingStats("monthly")}
+                        >
+                          Tháng
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          className="dropdown-item"
+                          href="#"
+                          onClick={() => fetchTopSellingStats("yearly")}
+                        >
+                          Năm
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body pb-0">
-                    <h5 className="card-title">Top Selling <span>| Today</span></h5>
+                    <h5 className="card-title">
+                      Top bán chạy <span>| {getLabel(topSellingPeriod)}</span>
+                    </h5>
                     <table className="table table-borderless">
                       <thead>
                         <tr>
-                          <th scope="col">Preview</th>
-                          <th scope="col">Product</th>
-                          <th scope="col">Price</th>
-                          <th scope="col">Sold</th>
-                          <th scope="col">Revenue</th>
+                          <th scope="col">Ảnh</th>
+                          <th scope="col">Xe</th>
+                          <th scope="col">Lượt thuê</th>
+                          <th scope="col">Doanh thu</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-1.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Ut inventore ipsa voluptas nulla</a></td>
-                          <td>$64</td>
-                          <td className="fw-bold">124</td>
-                          <td>$5,828</td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-2.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Exercitationem similique doloremque</a></td>
-                          <td>$46</td>
-                          <td className="fw-bold">98</td>
-                          <td>$4,508</td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-3.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Doloribus nisi exercitationem</a></td>
-                          <td>$59</td>
-                          <td className="fw-bold">74</td>
-                          <td>$4,366</td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-4.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Officiis quaerat sint rerum error</a></td>
-                          <td>$32</td>
-                          <td className="fw-bold">63</td>
-                          <td>$2,016</td>
-                        </tr>
-                        <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-5.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Sit unde debitis delectus repellendus</a></td>
-                          <td>$79</td>
-                          <td className="fw-bold">41</td>
-                          <td>$3,239</td>
-                        </tr>
+                        {topSelling.map((car, index) => (
+                          <tr key={car.carId}>
+                            <td>
+                              <img
+                                src={car.carImage}
+                                alt={car.carModelName}
+                                style={{
+                                  width: "150px",
+                                  borderRadius: "8px",
+                                  maxWidth: "none",
+                                }}
+                              />
+                            </td>
+                            <td>
+                              <span className="text-primary fw-bold">
+                                {car.carModelName}
+                              </span>
+                            </td>
+                            <td className="fw-bold">{car.rentalCount}</td>
+                            <td>
+                              {car.totalRevenue.toLocaleString("vi-VN", {
+                                style: "currency",
+                                currency: "VND",
+                              })}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -455,63 +697,84 @@ const Dashboard = () => {
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li className="dropdown-header text-start">
-                    <h6>Filter</h6>
+                    <h6>Lọc</h6>
                   </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Ngày
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Tháng
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Năm
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="card-body">
-                <h5 className="card-title">Recent Activity <span>| Today</span></h5>
+                <h5 className="card-title">
+                  Hoạt động gần đây<span> | Hôm nay</span>
+                </h5>
                 <div className="activity">
                   <div className="activity-item d-flex">
                     <div className="activite-label">32 min</div>
                     <FaCircle className="activity-badge text-success align-self-start" />
                     <div className="activity-content">
-                      Quia quae rerum <a href="#" className="fw-bold text-dark">explicabo officiis</a> beatae
+                      Thừa Văn An mới có buổi nói chuyển với anh{" "}
+                      <a href="#" className="fw-bold text-dark">
+                        CR7
+                      </a>{" "}
                     </div>
                   </div>
                   <div className="activity-item d-flex">
                     <div className="activite-label">56 min</div>
                     <FaCircle className="activity-badge text-danger align-self-start" />
                     <div className="activity-content">
-                      Voluptatem blanditiis blanditiis eveniet
+                      Phạm Đình Danh đã đặt thuê chiệc VF5 một năm
                     </div>
                   </div>
                   <div className="activity-item d-flex">
                     <div className="activite-label">2 hrs</div>
                     <FaCircle className="activity-badge text-primary align-self-start" />
                     <div className="activity-content">
-                      Voluptates corrupti molestias voluptatem
+                      Nguyễn Văn Chiến vửa cập nhật thông tin xe VF8
                     </div>
                   </div>
                   <div className="activity-item d-flex">
                     <div className="activite-label">1 day</div>
                     <FaCircle className="activity-badge text-info align-self-start" />
                     <div className="activity-content">
-                      Tempore autem saepe <a href="#" className="fw-bold text-dark">occaecati voluptatem</a> tempore
+                      Thừa Văn An mới trở thành{" "}
+                      <a href="#" className="fw-bold text-dark">
+                        tỷ phú
+                      </a>{" "}
+                      hahaha :))
                     </div>
                   </div>
                   <div className="activity-item d-flex">
                     <div className="activite-label">2 days</div>
                     <FaCircle className="activity-badge text-warning align-self-start" />
                     <div className="activity-content">
-                      Est sit eum reiciendis exercitationem
+                      Trần Hồng Quân mới xóa duyệt đơn thuê xe mớimới
                     </div>
                   </div>
                   <div className="activity-item d-flex">
                     <div className="activite-label">4 weeks</div>
                     <FaCircle className="activity-badge text-muted align-self-start" />
                     <div className="activity-content">
-                      Dicta dolorem harum nulla eius. Ut quidem quidem sit quas
+                      Nguyễn Văn Chiến đã cập nhật ảnh xe VF7
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Budget Report */}
+            {/* Overview */}
             <div className="card">
               <div className="filter">
                 <a className="icon" href="#" data-bs-toggle="dropdown">
@@ -519,37 +782,34 @@ const Dashboard = () => {
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li className="dropdown-header text-start">
-                    <h6>Filter</h6>
+                    <h6>Lọc</h6>
                   </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Ngày
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Tháng
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Năm
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="card-body pb-0">
-                <h5 className="card-title">Budget Report <span>| This Month</span></h5>
-                <div id="budgetChart" ref={budgetChartRef} style={{ minHeight: '400px' }}></div>
-              </div>
-            </div>
-
-            {/* Website Traffic */}
-            <div className="card">
-              <div className="filter">
-                <a className="icon" href="#" data-bs-toggle="dropdown">
-                  <BiDotsVertical />
-                </a>
-                <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li className="dropdown-header text-start">
-                    <h6>Filter</h6>
-                  </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
-                </ul>
-              </div>
-              <div className="card-body pb-0">
-                <h5 className="card-title">Website Traffic <span>| Today</span></h5>
-                <div id="trafficChart" ref={trafficChartRef} style={{ minHeight: '400px' }}></div>
+                <h5 className="card-title">
+                  Tổng quan hệ thống <span>| Hôm nay </span>
+                </h5>
+                <div
+                  id="trafficChart"
+                  ref={trafficChartRef}
+                  style={{ minHeight: "400px" }}
+                ></div>
               </div>
             </div>
 
@@ -561,40 +821,109 @@ const Dashboard = () => {
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                   <li className="dropdown-header text-start">
-                    <h6>Filter</h6>
+                    <h6>Lọc</h6>
                   </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Ngày
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Tháng
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Năm
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="card-body pb-0">
-                <h5 className="card-title">News &amp; Updates <span>| Today</span></h5>
+                <h5 className="card-title">
+                  Tin tức & Cập nhật <span>| Hôm nay</span>
+                </h5>
                 <div className="news">
                   <div className="post-item clearfix">
-                    <img src="assets/img/news-1.jpg" alt="" />
-                    <h4><a href="#">Nihil blanditiis at in nihil autem</a></h4>
-                    <p>Sit recusandae non aspernatur laboriosam. Quia enim eligendi sed ut harum...</p>
+                    <img
+                      src="https://greenfuture.tech/_next/image?url=https%3A%2F%2Fupload-static.fgf.vn%2Fcar%2Fvf301.jpg&w=1080&q=75"
+                      alt="VinFast VF3"
+                    />
+                    <h4>
+                      <a href="#">
+                        VinFast VF3 chính thức ra mắt, giá chỉ từ 200 triệu
+                      </a>
+                    </h4>
+                    <p>
+                      VinFast VF3 – mẫu xe điện mini thu hút đông đảo sự quan
+                      tâm tại Việt Nam – đã chính thức được công bố giá bán.
+                    </p>
                   </div>
+
                   <div className="post-item clearfix">
-                    <img src="assets/img/news-2.jpg" alt="" />
-                    <h4><a href="#">Quidem autem et impedit</a></h4>
-                    <p>Illo nemo neque maiores vitae officiis cum eum turos elan dries werona nande...</p>
+                    <img
+                      src="https://greenfuture.tech/_next/image?url=https%3A%2F%2Fupload-static.fgf.vn%2Fcar%2Fvf9-eco-09.jpg&w=1080&q=75"
+                      alt="VinFast VF 8 City Edition"
+                    />
+                    <h4>
+                      <a href="#">
+                        VinFast VF8 mở rộng thị trường sang châu Âu và Mỹ
+                      </a>
+                    </h4>
+                    <p>
+                      Mẫu SUV điện VF 8 đã có mặt tại nhiều showroom tại Mỹ và
+                      châu Âu, đánh dấu bước tiến lớn của VinFast ra quốc tế.
+                    </p>
                   </div>
+
                   <div className="post-item clearfix">
-                    <img src="assets/img/news-3.jpg" alt="" />
-                    <h4><a href="#">Id quia et et ut maxime similique occaecati ut</a></h4>
-                    <p>Fugiat voluptas vero eaque accusantium eos. Consequuntur sed ipsam et totam...</p>
+                    <img
+                      src="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSVB5gPRQE1jc9Gh5oQ1yDOmfFTxeZKGL35pD7LQvOYKAE10LAvNeNC80YfjYsUAq_wG71KCrj1m-nMTPq3JgFcE4k8M85rpjPkgXCUrkbqBqeXdWlEwbY"
+                      alt="VinFast VF9"
+                    />
+                    <h4>
+                      <a href="#">
+                        VinFast VF9 nhận giải thiết kế xe điện đẹp nhất châu Á
+                      </a>
+                    </h4>
+                    <p>
+                      Mẫu SUV cao cấp VF9 của VinFast đã được vinh danh tại lễ
+                      trao giải Asian Auto Design Awards 2024.
+                    </p>
                   </div>
+
                   <div className="post-item clearfix">
-                    <img src="assets/img/news-4.jpg" alt="" />
-                    <h4><a href="#">Laborum corporis quo dara net para</a></h4>
-                    <p>Qui enim quia optio. Eligendi aut asperiores enim repellendusvel rerum cuder...</p>
+                    <img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGJZ7auMG8MAfjgjIJAj2eIG66VZJEHPVsPA&s"
+                      alt="Tesla vs VinFast"
+                    />
+                    <h4>
+                      <a href="#">
+                        So sánh VinFast và Tesla: Cuộc cạnh tranh xe điện toàn
+                        cầu
+                      </a>
+                    </h4>
+                    <p>
+                      VinFast đang trở thành đối thủ đáng gờm của Tesla tại thị
+                      trường Đông Nam Á và mở rộng ảnh hưởng toàn cầu.
+                    </p>
                   </div>
+
                   <div className="post-item clearfix">
-                    <img src="assets/img/news-5.jpg" alt="" />
-                    <h4><a href="#">Et dolores corrupti quae illo quod dolor</a></h4>
-                    <p>Odit ut eveniet modi reiciendis. Atque cupiditate libero beatae dignissimos eius...</p>
+                    <img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1c30wozyHwb7uu8sieSu52lsKnSqMtv2n0w&s"
+                      alt="VinFast VF6"
+                    />
+                    <h4>
+                      <a href="#">
+                        VinFast VF6 - mẫu crossover điện đáng chú ý năm 2025
+                      </a>
+                    </h4>
+                    <p>
+                      Với thiết kế hiện đại, pin bền và giá cạnh tranh, VF6 là
+                      lựa chọn hấp dẫn trong phân khúc xe điện cỡ nhỏ.
+                    </p>
                   </div>
                 </div>
               </div>

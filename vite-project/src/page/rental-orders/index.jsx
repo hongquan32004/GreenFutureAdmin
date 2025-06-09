@@ -173,7 +173,7 @@ const RentalOrder = () => {
         pagination={{ pageSize: 3 }}
         style={{
           width: "75%",
-          marginTop: "100px",
+          marginTop: "130px",
           marginLeft: "350px",
           boxShadow: "0 0 15px rgba(0, 0, 0, 0.2)",
           borderRadius: "10px",

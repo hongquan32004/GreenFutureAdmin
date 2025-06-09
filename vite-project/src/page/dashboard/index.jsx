@@ -1,12 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { 
-  BiCart, 
-  BiDollar, 
-  BiGroup, 
-  BiDotsVertical,
-} from 'react-icons/bi';
-import { FaCircle } from 'react-icons/fa';
-import ApexCharts from 'apexcharts';
+import React, { useEffect, useRef } from "react";
+import { BiCart, BiDollar, BiGroup, BiDotsVertical } from "react-icons/bi";
+import { FaCircle } from "react-icons/fa";
+import ApexCharts from "apexcharts";
 
 const Dashboard = () => {
   const reportsChartRef = useRef(null);
@@ -17,49 +12,56 @@ const Dashboard = () => {
     // Reports Chart
     if (reportsChartRef.current) {
       const reportsChart = new ApexCharts(reportsChartRef.current, {
-        series: [{
-          name: 'Sales',
-          data: [31, 40, 28, 51, 42, 82, 56],
-        }, {
-          name: 'Revenue',
-          data: [11, 32, 45, 32, 34, 52, 41]
-        }, {
-          name: 'Customers',
-          data: [15, 11, 32, 18, 9, 24, 11]
-        }],
+        series: [
+          {
+            name: "Sales",
+            data: [31, 40, 28, 51, 42, 82, 56],
+          },
+          {
+            name: "Revenue",
+            data: [11, 32, 45, 32, 34, 52, 41],
+          },
+          {
+            name: "Customers",
+            data: [15, 11, 32, 18, 9, 24, 11],
+          },
+        ],
         chart: {
           height: 350,
-          type: 'area',
+          type: "area",
           toolbar: { show: false },
         },
         markers: { size: 4 },
-        colors: ['#4154f1', '#2eca6a', '#ff771d'],
+        colors: ["#4154f1", "#2eca6a", "#ff771d"],
         fill: {
           type: "gradient",
           gradient: {
             shadeIntensity: 1,
             opacityFrom: 0.3,
             opacityTo: 0.4,
-            stops: [0, 90, 100]
-          }
+            stops: [0, 90, 100],
+          },
         },
         dataLabels: { enabled: false },
         stroke: {
-          curve: 'smooth',
-          width: 2
+          curve: "smooth",
+          width: 2,
         },
         xaxis: {
-          type: 'datetime',
+          type: "datetime",
           categories: [
-            "2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", 
-            "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", 
-            "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", 
-            "2018-09-19T06:30:00.000Z"
-          ]
+            "2018-09-19T00:00:00.000Z",
+            "2018-09-19T01:30:00.000Z",
+            "2018-09-19T02:30:00.000Z",
+            "2018-09-19T03:30:00.000Z",
+            "2018-09-19T04:30:00.000Z",
+            "2018-09-19T05:30:00.000Z",
+            "2018-09-19T06:30:00.000Z",
+          ],
         },
         tooltip: {
-          x: { format: 'dd/MM/yy HH:mm' },
-        }
+          x: { format: "dd/MM/yy HH:mm" },
+        },
       });
       reportsChart.render();
 
@@ -74,53 +76,62 @@ const Dashboard = () => {
     if (budgetChartRef.current) {
       const budgetChart = new ApexCharts(budgetChartRef.current, {
         chart: {
-          type: 'radar',
-          height: 350
+          type: "radar",
+          height: 350,
         },
         legend: {
           show: true,
-          position: 'top',
+          position: "top",
           labels: {
             colors: undefined,
-            useSeriesColors: true
+            useSeriesColors: true,
           },
           markers: {
             width: 12,
             height: 12,
             strokeWidth: 0,
-            strokeColor: '#fff',
+            strokeColor: "#fff",
             radius: 12,
-          }
+          },
         },
-        series: [{
-          name: 'Budget vs spending',
-          data: [
-            { 
-              name: 'Allocated Budget',
-              data: [4200, 3000, 20000, 35000, 50000, 18000]
-            },
-            { 
-              name: 'Actual Spending',
-              data: [5000, 14000, 28000, 26000, 42000, 21000]
-            }
-          ]
-        }],
+        series: [
+          {
+            name: "Budget vs spending",
+            data: [
+              {
+                name: "Allocated Budget",
+                data: [4200, 3000, 20000, 35000, 50000, 18000],
+              },
+              {
+                name: "Actual Spending",
+                data: [5000, 14000, 28000, 26000, 42000, 21000],
+              },
+            ],
+          },
+        ],
         xaxis: {
-          categories: ['Sales', 'Administration', 'IT', 'Customer Support', 'Development', 'Marketing']
+          categories: [
+            "Sales",
+            "Administration",
+            "IT",
+            "Customer Support",
+            "Development",
+            "Marketing",
+          ],
         },
         yaxis: {
-          show: false
+          show: false,
         },
         markers: {
-          size: 0
+          size: 0,
         },
         tooltip: {
           y: {
-            formatter: function(val) {
-              return val.toString()
-            }
-          }
-        }
+            formatter: function (val) {
+              return val.toString();
+            },
+          },
+        },
       });
       budgetChart.render();
 
@@ -135,29 +146,31 @@ const Dashboard = () => {
     if (trafficChartRef.current) {
       const trafficChart = new ApexCharts(trafficChartRef.current, {
         chart: {
-          type: 'pie',
-          height: 350
+          type: "pie",
+          height: 350,
         },
-        tooltip: { 
-          trigger: 'item' 
+        tooltip: {
+          trigger: "item",
         },
         legend: {
-          top: '5%',
-          left: 'center'
+          top: "5%",
+          left: "center",
         },
         series: [1048, 735, 580, 484, 300],
-        labels: ['Search Engine', 'Direct', 'Email', 'Union Ads', 'Video Ads'],
-        responsive: [{
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 200
+        labels: ["Search Engine", "Direct", "Email", "Union Ads", "Video Ads"],
+        responsive: [
+          {
+            breakpoint: 480,
+            options: {
+              chart: {
+                width: 200,
+              },
+              legend: {
+                position: "bottom",
+              },
             },
-            legend: {
-              position: 'bottom'
-            }
-          }
-        }]
+          },
+        ],
       });
       trafficChart.render();
 
@@ -173,7 +186,9 @@ const Dashboard = () => {
         <h1>Dashboard</h1>
         <nav>
           <ol className="breadcrumb">
-            <li className="breadcrumb-item"><a href="index.html">Home</a></li>
+            <li className="breadcrumb-item">
+              <a href="index.html">Home</a>
+            </li>
             <li className="breadcrumb-item active">Dashboard</li>
           </ol>
         </nav>
@@ -195,21 +210,39 @@ const Dashboard = () => {
                       <li className="dropdown-header text-start">
                         <h6>Filter</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Today
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Month
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Year
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Sales <span>| Today</span></h5>
+                    <h5 className="card-title">
+                      Sales <span>| Today</span>
+                    </h5>
                     <div className="d-flex align-items-center">
                       <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <BiCart />
                       </div>
                       <div className="ps-3">
                         <h6>145</h6>
-                        <span className="text-success small pt-1 fw-bold">12%</span>
-                        <span className="text-muted small pt-2 ps-1">increase</span>
+                        <span className="text-success small pt-1 fw-bold">
+                          12%
+                        </span>
+                        <span className="text-muted small pt-2 ps-1">
+                          increase
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -227,21 +260,39 @@ const Dashboard = () => {
                       <li className="dropdown-header text-start">
                         <h6>Filter</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Today
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Month
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Year
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Revenue <span>| This Month</span></h5>
+                    <h5 className="card-title">
+                      Revenue <span>| This Month</span>
+                    </h5>
                     <div className="d-flex align-items-center">
                       <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <BiDollar />
                       </div>
                       <div className="ps-3">
                         <h6>$3,264</h6>
-                        <span className="text-success small pt-1 fw-bold">8%</span>
-                        <span className="text-muted small pt-2 ps-1">increase</span>
+                        <span className="text-success small pt-1 fw-bold">
+                          8%
+                        </span>
+                        <span className="text-muted small pt-2 ps-1">
+                          increase
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -259,21 +310,39 @@ const Dashboard = () => {
                       <li className="dropdown-header text-start">
                         <h6>Filter</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Today
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Month
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Year
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Customers <span>| This Year</span></h5>
+                    <h5 className="card-title">
+                      Customers <span>| This Year</span>
+                    </h5>
                     <div className="d-flex align-items-center">
                       <div className="card-icon rounded-circle d-flex align-items-center justify-content-center">
                         <BiGroup />
                       </div>
                       <div className="ps-3">
                         <h6>1244</h6>
-                        <span className="text-danger small pt-1 fw-bold">12%</span>
-                        <span className="text-muted small pt-2 ps-1">decrease</span>
+                        <span className="text-danger small pt-1 fw-bold">
+                          12%
+                        </span>
+                        <span className="text-muted small pt-2 ps-1">
+                          decrease
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -291,13 +360,27 @@ const Dashboard = () => {
                       <li className="dropdown-header text-start">
                         <h6>Filter</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Today
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Month
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Year
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Reports <span>/Today</span></h5>
+                    <h5 className="card-title">
+                      Reports <span>/Today</span>
+                    </h5>
                     <div id="reportsChart" ref={reportsChartRef}></div>
                   </div>
                 </div>
@@ -314,13 +397,27 @@ const Dashboard = () => {
                       <li className="dropdown-header text-start">
                         <h6>Filter</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Today
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Month
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Year
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body">
-                    <h5 className="card-title">Recent Sales <span>| Today</span></h5>
+                    <h5 className="card-title">
+                      Recent Sales <span>| Today</span>
+                    </h5>
                     <table className="table table-borderless datatable">
                       <thead>
                         <tr>
@@ -333,39 +430,79 @@ const Dashboard = () => {
                       </thead>
                       <tbody>
                         <tr>
-                          <th scope="row"><a href="#">#2457</a></th>
+                          <th scope="row">
+                            <a href="#">#2457</a>
+                          </th>
                           <td>Brandon Jacob</td>
-                          <td><a href="#" className="text-primary">At praesentium minu</a></td>
+                          <td>
+                            <a href="#" className="text-primary">
+                              At praesentium minu
+                            </a>
+                          </td>
                           <td>$64</td>
-                          <td><span className="badge bg-success">Approved</span></td>
+                          <td>
+                            <span className="badge bg-success">Approved</span>
+                          </td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#">#2147</a></th>
+                          <th scope="row">
+                            <a href="#">#2147</a>
+                          </th>
                           <td>Bridie Kessler</td>
-                          <td><a href="#" className="text-primary">Blanditiis dolor omnis similique</a></td>
+                          <td>
+                            <a href="#" className="text-primary">
+                              Blanditiis dolor omnis similique
+                            </a>
+                          </td>
                           <td>$47</td>
-                          <td><span className="badge bg-warning">Pending</span></td>
+                          <td>
+                            <span className="badge bg-warning">Pending</span>
+                          </td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#">#2049</a></th>
+                          <th scope="row">
+                            <a href="#">#2049</a>
+                          </th>
                           <td>Ashleigh Langosh</td>
-                          <td><a href="#" className="text-primary">At recusandae consectetur</a></td>
+                          <td>
+                            <a href="#" className="text-primary">
+                              At recusandae consectetur
+                            </a>
+                          </td>
                           <td>$147</td>
-                          <td><span className="badge bg-success">Approved</span></td>
+                          <td>
+                            <span className="badge bg-success">Approved</span>
+                          </td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#">#2644</a></th>
+                          <th scope="row">
+                            <a href="#">#2644</a>
+                          </th>
                           <td>Angus Grady</td>
-                          <td><a href="#" className="text-primar">Ut voluptatem id earum et</a></td>
+                          <td>
+                            <a href="#" className="text-primar">
+                              Ut voluptatem id earum et
+                            </a>
+                          </td>
                           <td>$67</td>
-                          <td><span className="badge bg-danger">Rejected</span></td>
+                          <td>
+                            <span className="badge bg-danger">Rejected</span>
+                          </td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#">#2644</a></th>
+                          <th scope="row">
+                            <a href="#">#2644</a>
+                          </th>
                           <td>Raheem Lehner</td>
-                          <td><a href="#" className="text-primary">Sunt similique distinctio</a></td>
+                          <td>
+                            <a href="#" className="text-primary">
+                              Sunt similique distinctio
+                            </a>
+                          </td>
                           <td>$165</td>
-                          <td><span className="badge bg-success">Approved</span></td>
+                          <td>
+                            <span className="badge bg-success">Approved</span>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -384,13 +521,27 @@ const Dashboard = () => {
                       <li className="dropdown-header text-start">
                         <h6>Filter</h6>
                       </li>
-                      <li><a className="dropdown-item" href="#">Today</a></li>
-                      <li><a className="dropdown-item" href="#">This Month</a></li>
-                      <li><a className="dropdown-item" href="#">This Year</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Today
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Month
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          This Year
+                        </a>
+                      </li>
                     </ul>
                   </div>
                   <div className="card-body pb-0">
-                    <h5 className="card-title">Top Selling <span>| Today</span></h5>
+                    <h5 className="card-title">
+                      Top Selling <span>| Today</span>
+                    </h5>
                     <table className="table table-borderless">
                       <thead>
                         <tr>
@@ -403,36 +554,76 @@ const Dashboard = () => {
                       </thead>
                       <tbody>
                         <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-1.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Ut inventore ipsa voluptas nulla</a></td>
+                          <th scope="row">
+                            <a href="#">
+                              <img src="assets/img/product-1.jpg" alt="" />
+                            </a>
+                          </th>
+                          <td>
+                            <a href="#" className="text-primary fw-bold">
+                              Ut inventore ipsa voluptas nulla
+                            </a>
+                          </td>
                           <td>$64</td>
                           <td className="fw-bold">124</td>
                           <td>$5,828</td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-2.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Exercitationem similique doloremque</a></td>
+                          <th scope="row">
+                            <a href="#">
+                              <img src="assets/img/product-2.jpg" alt="" />
+                            </a>
+                          </th>
+                          <td>
+                            <a href="#" className="text-primary fw-bold">
+                              Exercitationem similique doloremque
+                            </a>
+                          </td>
                           <td>$46</td>
                           <td className="fw-bold">98</td>
                           <td>$4,508</td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-3.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Doloribus nisi exercitationem</a></td>
+                          <th scope="row">
+                            <a href="#">
+                              <img src="assets/img/product-3.jpg" alt="" />
+                            </a>
+                          </th>
+                          <td>
+                            <a href="#" className="text-primary fw-bold">
+                              Doloribus nisi exercitationem
+                            </a>
+                          </td>
                           <td>$59</td>
                           <td className="fw-bold">74</td>
                           <td>$4,366</td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-4.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Officiis quaerat sint rerum error</a></td>
+                          <th scope="row">
+                            <a href="#">
+                              <img src="assets/img/product-4.jpg" alt="" />
+                            </a>
+                          </th>
+                          <td>
+                            <a href="#" className="text-primary fw-bold">
+                              Officiis quaerat sint rerum error
+                            </a>
+                          </td>
                           <td>$32</td>
                           <td className="fw-bold">63</td>
                           <td>$2,016</td>
                         </tr>
                         <tr>
-                          <th scope="row"><a href="#"><img src="assets/img/product-5.jpg" alt="" /></a></th>
-                          <td><a href="#" className="text-primary fw-bold">Sit unde debitis delectus repellendus</a></td>
+                          <th scope="row">
+                            <a href="#">
+                              <img src="assets/img/product-5.jpg" alt="" />
+                            </a>
+                          </th>
+                          <td>
+                            <a href="#" className="text-primary fw-bold">
+                              Sit unde debitis delectus repellendus
+                            </a>
+                          </td>
                           <td>$79</td>
                           <td className="fw-bold">41</td>
                           <td>$3,239</td>
@@ -457,19 +648,37 @@ const Dashboard = () => {
                   <li className="dropdown-header text-start">
                     <h6>Filter</h6>
                   </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Today
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Month
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Year
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="card-body">
-                <h5 className="card-title">Recent Activity <span>| Today</span></h5>
+                <h5 className="card-title">
+                  Recent Activity <span>| Today</span>
+                </h5>
                 <div className="activity">
                   <div className="activity-item d-flex">
                     <div className="activite-label">32 min</div>
                     <FaCircle className="activity-badge text-success align-self-start" />
                     <div className="activity-content">
-                      Quia quae rerum <a href="#" className="fw-bold text-dark">explicabo officiis</a> beatae
+                      Quia quae rerum{" "}
+                      <a href="#" className="fw-bold text-dark">
+                        explicabo officiis
+                      </a>{" "}
+                      beatae
                     </div>
                   </div>
                   <div className="activity-item d-flex">
@@ -490,7 +699,11 @@ const Dashboard = () => {
                     <div className="activite-label">1 day</div>
                     <FaCircle className="activity-badge text-info align-self-start" />
                     <div className="activity-content">
-                      Tempore autem saepe <a href="#" className="fw-bold text-dark">occaecati voluptatem</a> tempore
+                      Tempore autem saepe{" "}
+                      <a href="#" className="fw-bold text-dark">
+                        occaecati voluptatem
+                      </a>{" "}
+                      tempore
                     </div>
                   </div>
                   <div className="activity-item d-flex">
@@ -521,14 +734,32 @@ const Dashboard = () => {
                   <li className="dropdown-header text-start">
                     <h6>Filter</h6>
                   </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Today
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Month
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Year
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="card-body pb-0">
-                <h5 className="card-title">Budget Report <span>| This Month</span></h5>
-                <div id="budgetChart" ref={budgetChartRef} style={{ minHeight: '400px' }}></div>
+                <h5 className="card-title">
+                  Budget Report <span>| This Month</span>
+                </h5>
+                <div
+                  id="budgetChart"
+                  ref={budgetChartRef}
+                  style={{ minHeight: "400px" }}
+                ></div>
               </div>
             </div>
 
@@ -542,14 +773,32 @@ const Dashboard = () => {
                   <li className="dropdown-header text-start">
                     <h6>Filter</h6>
                   </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Today
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Month
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Year
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="card-body pb-0">
-                <h5 className="card-title">Website Traffic <span>| Today</span></h5>
-                <div id="trafficChart" ref={trafficChartRef} style={{ minHeight: '400px' }}></div>
+                <h5 className="card-title">
+                  Website Traffic <span>| Today</span>
+                </h5>
+                <div
+                  id="trafficChart"
+                  ref={trafficChartRef}
+                  style={{ minHeight: "400px" }}
+                ></div>
               </div>
             </div>
 
@@ -563,38 +812,79 @@ const Dashboard = () => {
                   <li className="dropdown-header text-start">
                     <h6>Filter</h6>
                   </li>
-                  <li><a className="dropdown-item" href="#">Today</a></li>
-                  <li><a className="dropdown-item" href="#">This Month</a></li>
-                  <li><a className="dropdown-item" href="#">This Year</a></li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      Today
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Month
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      This Year
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="card-body pb-0">
-                <h5 className="card-title">News &amp; Updates <span>| Today</span></h5>
+                <h5 className="card-title">
+                  News &amp; Updates <span>| Today</span>
+                </h5>
                 <div className="news">
                   <div className="post-item clearfix">
                     <img src="assets/img/news-1.jpg" alt="" />
-                    <h4><a href="#">Nihil blanditiis at in nihil autem</a></h4>
-                    <p>Sit recusandae non aspernatur laboriosam. Quia enim eligendi sed ut harum...</p>
+                    <h4>
+                      <a href="#">Nihil blanditiis at in nihil autem</a>
+                    </h4>
+                    <p>
+                      Sit recusandae non aspernatur laboriosam. Quia enim
+                      eligendi sed ut harum...
+                    </p>
                   </div>
                   <div className="post-item clearfix">
                     <img src="assets/img/news-2.jpg" alt="" />
-                    <h4><a href="#">Quidem autem et impedit</a></h4>
-                    <p>Illo nemo neque maiores vitae officiis cum eum turos elan dries werona nande...</p>
+                    <h4>
+                      <a href="#">Quidem autem et impedit</a>
+                    </h4>
+                    <p>
+                      Illo nemo neque maiores vitae officiis cum eum turos elan
+                      dries werona nande...
+                    </p>
                   </div>
                   <div className="post-item clearfix">
                     <img src="assets/img/news-3.jpg" alt="" />
-                    <h4><a href="#">Id quia et et ut maxime similique occaecati ut</a></h4>
-                    <p>Fugiat voluptas vero eaque accusantium eos. Consequuntur sed ipsam et totam...</p>
+                    <h4>
+                      <a href="#">
+                        Id quia et et ut maxime similique occaecati ut
+                      </a>
+                    </h4>
+                    <p>
+                      Fugiat voluptas vero eaque accusantium eos. Consequuntur
+                      sed ipsam et totam...
+                    </p>
                   </div>
                   <div className="post-item clearfix">
                     <img src="assets/img/news-4.jpg" alt="" />
-                    <h4><a href="#">Laborum corporis quo dara net para</a></h4>
-                    <p>Qui enim quia optio. Eligendi aut asperiores enim repellendusvel rerum cuder...</p>
+                    <h4>
+                      <a href="#">Laborum corporis quo dara net para</a>
+                    </h4>
+                    <p>
+                      Qui enim quia optio. Eligendi aut asperiores enim
+                      repellendusvel rerum cuder...
+                    </p>
                   </div>
                   <div className="post-item clearfix">
                     <img src="assets/img/news-5.jpg" alt="" />
-                    <h4><a href="#">Et dolores corrupti quae illo quod dolor</a></h4>
-                    <p>Odit ut eveniet modi reiciendis. Atque cupiditate libero beatae dignissimos eius...</p>
+                    <h4>
+                      <a href="#">Et dolores corrupti quae illo quod dolor</a>
+                    </h4>
+                    <p>
+                      Odit ut eveniet modi reiciendis. Atque cupiditate libero
+                      beatae dignissimos eius...
+                    </p>
                   </div>
                 </div>
               </div>

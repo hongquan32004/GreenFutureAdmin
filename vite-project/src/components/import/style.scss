@@ -1,0 +1,49 @@
+.ant-modal-wrap {
+    .ant-modal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        div[tabindex="-1"] {
+            width: 550px !important;
+
+            .ant-modal-content {
+                width: 100%;
+                border-radius: 25px;
+
+                .ant-modal-close {
+                    margin-top: 11px;
+                }
+
+                .ant-modal-header {
+                    .ant-modal-title {
+                        font-size: 25px;
+                        font-weight: bold;
+                        text-align: left;
+                    }
+                }
+
+                .ant-modal-body {
+                    .ant-upload-drag-container {
+                        .ant-upload-text {
+                            .highlight {
+                                color: #F37335;
+                            }
+                        }
+                    }
+                }
+
+                .ant-modal-footer {
+                    .ant-btn:first-child {
+                        display: none;
+                    }
+
+                    .ant-btn {
+                        width: 70px;
+                        height: 30px;
+                    }
+                }
+            }
+        }
+    }
+}

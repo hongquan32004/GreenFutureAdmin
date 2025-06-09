@@ -3,17 +3,54 @@ import { message, Space, Table, Tag, Spin, Image, Button } from "antd";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { get } from "../../utils/axios-http/axios-http";
+import { get, post } from "../../utils/axios-http/axios-http";
+import Import from "../../components/import";
+import axios from "axios";
 
 const ListCarAll = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [displayModal, setDisplayModal] = useState(false);
+
+  const handleExportExel = async () => {
+    try {
+      const response = await get(
+        "cars/export/excel",
+        {},
+        {
+          responseType: "blob",
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "danh-sach-xe.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      message.success("Export thành công!!");
+    } catch (error) {
+      console.error(error);
+      message.error("Có lỗi khi export!!!");
+    }
+  };
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await get("cars");
-        setData(res?.data?.items || []);
+        const allCar = [];
+        const startPage = 0;
+        const endPage = 10;
+        for (let i = startPage; i <= endPage; i++) {
+          const res = await get(`cars?page=${i}`);
+          const items = res?.data?.items || [];
+          allCar.push(...items);
+        }
+
+        setData(allCar);
       } catch (err) {
         console.error(err);
         message.error("Không lấy được dữ liệu xe!");
@@ -126,21 +163,50 @@ const ListCarAll = () => {
     },
   ];
   return (
-    <Spin spinning={loading}>
-      <Table
-        rowKey="id"
-        columns={columns}
-        dataSource={data.map((item) => ({ ...item, key: item.id }))}
-        pagination={{ pageSize: 5 }}
-        style={{
-          width: "75%",
-          marginTop: "150px",
-          marginLeft: "350px",
-          boxShadow: "0 0 15px rgba(0, 0, 0, 0.2)",
-          borderRadius: "10px",
-        }}
-      />
-    </Spin>
+    <div style={{ marginTop: "111px" }}>
+      <div className="button">
+        <Button
+          style={{
+            marginLeft: "350px",
+            marginBottom: "10px",
+            marginRight: "20px",
+            background: "#9C69E2",
+            color: "white",
+          }}
+          onClick={() => setDisplayModal(true)}
+        >
+          Import exel
+        </Button>
+        <Button
+          style={{
+            marginBottom: "10px",
+            background: "#9C69E2",
+            color: "white",
+          }}
+          onClick={handleExportExel}
+        >
+          Export exel
+        </Button>
+        <Import
+          displayModel={displayModal}
+          hideModal={() => setDisplayModal(false)}
+        />
+      </div>
+      <Spin spinning={loading}>
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={data.map((item) => ({ ...item, key: item.id }))}
+          pagination={{ pageSize: 7 }}
+          style={{
+            width: "75%",
+            marginLeft: "350px",
+            boxShadow: "0 0 15px rgba(0, 0, 0, 0.2)",
+            borderRadius: "10px",
+          }}
+        />
+      </Spin>
+    </div>
   );
 };
 

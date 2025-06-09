@@ -50,16 +50,18 @@ const handleError = (error) => {
 
 // Phương thức GET
 
-const get = async (path, params = {}) => {
+const get = async (path, params = {},config = {}) => {
     try {
         const response = await axiosInstance.get(`/${path}`, {
-            params
+            params,
+            ...config
         });
         return response.data;
     } catch (error) {
         handleError(error);
     }
 };
+
 // Phương thức POST
 const post = async (path, data) => {
     try {
@@ -88,7 +90,19 @@ const patch = async (path, data) => {
         handleError(error);
     }
 };
-
+// Phương thức POST dùng cho FormData (ví dụ upload file)
+const postFormData = async (path, formData) => {
+    try {
+        const response = await axiosInstanceForm.post(`/${path}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handleError(error);
+    }
+};
 // Phương thức PUT
 const put = async(path,data) => {
     try{
@@ -130,5 +144,6 @@ export {
     patch,
     put,
     patchForm,
-    deleteMethod
+    deleteMethod,
+    postFormData
 };

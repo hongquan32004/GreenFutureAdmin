@@ -32,7 +32,7 @@ const Update = ({ displayModel, hideModal, onSuccessImport }) => {
         onSuccess("ok");
         setFileList([]);
         if (onSuccessImport) {
-          onSuccessImport(); // Gọi lại fetchData
+          onSuccessImport(); 
         }
       } catch (error) {
         message.error("Update thất bại!!!");

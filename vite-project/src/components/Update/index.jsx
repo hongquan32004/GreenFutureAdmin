@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./style.scss";
 import { Modal, Upload, message, Spin, notification } from "antd";
 import { postFormData, put } from "../../utils/axios-http/axios-http";
@@ -6,11 +6,20 @@ import { postFormData, put } from "../../utils/axios-http/axios-http";
 const { Dragger } = Upload;
 const Update = ({ displayModel, hideModal, onSuccessImport }) => {
   const [loading, setLoading] = useState(false);
-
+  const [fileList, setFileList] = useState([]);
+  useEffect(() => {
+    if (displayModel) {
+      setFileList([]);
+    }
+  }, [displayModel]);
   const props = {
     name: "file",
     multiple: false,
     accept: ".xlsx",
+    fileList,
+    onChange(info) {
+      setFileList(info.fileList);
+    },
     customRequest: async ({ file, onSuccess, onError }) => {
       setLoading(true);
       const formData = new FormData();
@@ -21,8 +30,9 @@ const Update = ({ displayModel, hideModal, onSuccessImport }) => {
         message.success("Update thành công!!!");
         hideModal();
         onSuccess("ok");
+        setFileList([]);
         if (onSuccessImport) {
-          onSuccessImport(); // Gọi lại fetchData
+          onSuccessImport(); 
         }
       } catch (error) {
         message.error("Update thất bại!!!");
@@ -41,6 +51,7 @@ const Update = ({ displayModel, hideModal, onSuccessImport }) => {
         open={displayModel}
         onClose={hideModal}
         onCancel={hideModal}
+        footer={null}
       >
         <Spin spinning={loading}>
           <Dragger

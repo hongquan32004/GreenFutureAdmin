@@ -6,8 +6,6 @@ import dayjs from "dayjs";
 import { get, post } from "../../utils/axios-http/axios-http";
 import Import from "../../components/import";
 
-
-
 const ListCarAll = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -37,27 +35,27 @@ const ListCarAll = () => {
       message.error("Có lỗi khi export!!!");
     }
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const allCar = [];
-        const startPage = 0;
-        const endPage = 10;
-        for (let i = startPage; i <= endPage; i++) {
-          const res = await get(`cars?page=${i}`);
-          const items = res?.data?.items || [];
-          allCar.push(...items);
-        }
-        setData(allCar);
-      } catch (err) {
-        console.error(err);
-        message.error("Không lấy được dữ liệu xe!");
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const allCar = [];
+      const startPage = 0;
+      const endPage = 10;
+      for (let i = startPage; i <= endPage; i++) {
+        const res = await get(`cars?page=${i}`);
+        const items = res?.data?.items || [];
+        allCar.push(...items);
       }
-    };
+      setData(allCar);
+    } catch (err) {
+      console.error(err);
+      message.error("Không lấy được dữ liệu xe!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
   const columns = [
@@ -189,6 +187,7 @@ const ListCarAll = () => {
         <Import
           displayModel={displayModal}
           hideModal={() => setDisplayModal(false)}
+          onSuccessImport={fetchData}
         />
       </div>
       <Spin spinning={loading}>

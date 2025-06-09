@@ -4,7 +4,7 @@ import { Modal, Upload, message, Spin, notification } from "antd";
 import { postFormData } from "../../utils/axios-http/axios-http";
 
 const { Dragger } = Upload;
-const Import = ({ displayModel, hideModal }) => {
+const Import = ({ displayModel, hideModal, onSuccessImport }) => {
   const [loading, setLoading] = useState(false);
 
   const props = {
@@ -21,6 +21,9 @@ const Import = ({ displayModel, hideModal }) => {
         message.success("Import thành công!!!");
         hideModal();
         onSuccess("ok");
+        if (onSuccessImport) {
+          onSuccessImport(); // Gọi lại fetchData
+        }
       } catch (error) {
         message.error("Import thất bại!!!");
         onError(error);

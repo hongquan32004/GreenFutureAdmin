@@ -22,7 +22,6 @@ function Login() {
         console.log("Đăng nhập thất bại");
         message.error("Đăng nhập thất bại!!!");
       }
-      console.log(response);
     } catch (error) {
       console.error(error);
       message.error("Đăng nhập thất bại!!!");

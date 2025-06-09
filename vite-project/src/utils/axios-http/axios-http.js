@@ -1,15 +1,11 @@
 /* eslint-disable */
 import axios from 'axios';
-import {
-    data
-} from 'react-router-dom';
-
+import { data } from 'react-router-dom';
 
 
 const baseURL =
     import.meta.env.VITE_APP_URL_BE;
 
-console.log(baseURL)
 
 const createAxiosInstance = (baseURL, headers = {}) => {
     const instance = axios.create({
@@ -53,16 +49,19 @@ const handleError = (error) => {
 
 // Phương thức GET
 
-const get = async (path, params = {}) => {
+
+const get = async (path, params = {},config = {}) => {
     try {
         const response = await axiosInstance.get(`/${path}`, {
-            params
+            params,
+            ...config
         });
         return response.data;
     } catch (error) {
         handleError(error);
     }
 };
+
 // Phương thức POST
 const post = async (path, data) => {
     try {
@@ -92,15 +91,43 @@ const patch = async (path, data) => {
     }
 };
 
-// Phương thức PUT
-const put = async (path, data) => {
+// Phương thức POST dùng cho FormData (ví dụ upload file)
+const postFormData = async (path, formData) => {
     try {
-        const response = await axiosInstance.put(`/${path}`, data);
+        const response = await axiosInstanceForm.post(`/${path}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
         return response.data;
     } catch (error) {
         handleError(error);
     }
+};
+// Phương thức PUT
+const put = async(path, formData) => {
+    try{
+        const response = await axiosInstance.put(`/${path}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    }
+    catch(error){
+        handleError(error);
+    }
 }
+const putForm = async(path, formData) => {
+    try{
+        const response = await axiosInstance.put(`/${path}`, formData);
+        return response.data;
+    }
+    catch(error){
+        handleError(error);
+    }
+}
+
 
 // Phương thức PATCH với form data
 const patchForm = async (path, data) => {
@@ -132,5 +159,7 @@ export {
     patch,
     put,
     patchForm,
-    deleteMethod
+    deleteMethod,
+    postFormData,
+    putForm
 };

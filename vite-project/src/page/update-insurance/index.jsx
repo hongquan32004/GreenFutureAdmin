@@ -12,7 +12,7 @@ import {
 import dayjs from "dayjs";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { get, put } from "../../utils/axios-http/axios-http";
+import { get, put, putForm } from "../../utils/axios-http/axios-http";
 import "./style.scss";
 
 const { TextArea } = Input;
@@ -50,7 +50,7 @@ const UpdateInsurance = () => {
       createdAt: values.createdAt ? values.createdAt.toISOString() : null,
     };
     try {
-      await put(`insurance-options/${id}`, payload);
+      await putForm(`insurance-options/${id}`, payload);
       message.success("Cập nhật thành công!!!");
       navigate("/insurance");
     } catch (error) {

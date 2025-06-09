@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { get, post } from "../../utils/axios-http/axios-http";
 import Import from "../../components/import";
-import axios from "axios";
+
+
 
 const ListCarAll = () => {
   const [data, setData] = useState([]);
@@ -21,7 +22,6 @@ const ListCarAll = () => {
           responseType: "blob",
         }
       );
-
       const url = window.URL.createObjectURL(new Blob([response]));
       const link = document.createElement("a");
       link.href = url;
@@ -49,7 +49,6 @@ const ListCarAll = () => {
           const items = res?.data?.items || [];
           allCar.push(...items);
         }
-
         setData(allCar);
       } catch (err) {
         console.error(err);

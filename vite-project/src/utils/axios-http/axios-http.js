@@ -3,7 +3,6 @@ import axios from 'axios';
 import { data } from 'react-router-dom';
 
 
-
 const baseURL =
     import.meta.env.VITE_APP_URL_BE;
 
@@ -50,6 +49,7 @@ const handleError = (error) => {
 
 // Phương thức GET
 
+
 const get = async (path, params = {},config = {}) => {
     try {
         const response = await axiosInstance.get(`/${path}`, {
@@ -90,6 +90,7 @@ const patch = async (path, data) => {
         handleError(error);
     }
 };
+
 // Phương thức POST dùng cho FormData (ví dụ upload file)
 const postFormData = async (path, formData) => {
     try {
@@ -145,5 +146,5 @@ export {
     put,
     patchForm,
     deleteMethod,
-    postFormData
+    postFormData,
 };
